@@ -22,4 +22,4 @@ local-smoke.ps1
 启动ConfigVault.cmd
 停止ConfigVault.cmd
 tests/smoke_local.py
-
+maven-settings.xml
