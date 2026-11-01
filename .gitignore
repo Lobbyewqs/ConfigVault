@@ -15,3 +15,11 @@ tmp*/
 *.cfg
 .idea/
 docs/本机运行.md
+
+# 本机专用启动脚本
+local.ps1
+local-smoke.ps1
+启动ConfigVault.cmd
+停止ConfigVault.cmd
+tests/smoke_local.py
+
