@@ -1,0 +1,17 @@
+.m2/
+.runtime/
+__pycache__/
+*.pyc
+server/target/
+.configvault.json
+.configvault-backups/
+.env
+
+.playwright-cli/
+output/playwright/
+
+# 本机状态、测试残留和用户配置
+tmp*/
+*.cfg
+.idea/
+docs/本机运行.md

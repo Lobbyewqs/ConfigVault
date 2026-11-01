@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: configvault
+      MYSQL_USER: configvault
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请先设置 MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请先设置 MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  app:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      BIND_ADDRESS: 0.0.0.0
+      DB_URL: jdbc:mysql://mysql:3306/configvault?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+      DB_USER: configvault
+      DB_PASSWORD: ${MYSQL_PASSWORD:?请先设置 MYSQL_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+volumes:
+  mysql_data:

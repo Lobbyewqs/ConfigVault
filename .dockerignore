@@ -1,0 +1,5 @@
+.m2
+.runtime
+**/__pycache__
+**/target
+.env

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConfigVault</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="ConfigVault 首页">
+        <span class="brand-icon" aria-hidden="true"><span></span></span>
+        <span class="brand-name">ConfigVault</span>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-description">CS2 配置版本库</span>
+      </a>
+      <button id="logout" class="text-button" type="button" hidden>退出登录</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+    <section id="auth" class="auth-layout" aria-labelledby="authTitle">
+      <div class="auth-copy">
+        <div class="file-symbol" aria-hidden="true"><span>cfg</span></div>
+        <h1>管理 CS2 配置版本</h1>
+        <p>保存配置文件、比较历史版本，需要时恢复。</p>
+        <div class="auth-note"><span class="auth-note-mark" aria-hidden="true"></span>文件按原样保存，不会执行配置内容</div>
+      </div>
+      <div class="auth-panel">
+        <div class="panel-heading"><h2 id="authTitle">登录配置库</h2><p>首次使用？填写账号和密码后选择注册。</p></div>
+        <form id="authForm" class="auth-form">
+          <label for="username">用户名</label>
+          <input id="username" name="username" required pattern="[A-Za-z0-9_]{3,64}" autocomplete="username" placeholder="3–64 位字母、数字或下划线">
+          <label for="password">密码</label>
+          <input id="password" name="password" type="password" minlength="10" maxlength="72" required autocomplete="current-password" placeholder="至少 10 个字符">
+          <button type="submit" class="primary auth-submit">登录</button>
+          <button type="button" id="register" class="secondary auth-register">注册新账号</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="app" class="workspace" hidden>
+      <aside class="sidebar" aria-label="配置库导航">
+        <div class="sidebar-section">
+          <div class="section-title"><div><h1>配置库</h1><p>选择一个库查看版本</p></div><span class="section-marker" aria-hidden="true"></span></div>
+          <form id="newRepo" class="create-repo">
+            <label class="sr-only" for="repoName">配置库名称</label>
+            <input id="repoName" name="name" placeholder="输入配置库名称" maxlength="80" required>
+            <button class="secondary" type="submit">新建</button>
+          </form>
+          <ul id="repositories" class="repo-list" aria-label="我的配置库"></ul>
+        </div>
+        <details class="token-section">
+          <summary><span>客户端令牌</span><span class="summary-arrow" aria-hidden="true">⌄</span></summary>
+          <div class="token-content">
+            <p>用于命令行客户端，有效期 90 天。令牌仅显示一次。</p>
+            <form id="newToken" class="create-token">
+              <label class="sr-only" for="tokenLabel">令牌名称</label>
+              <input id="tokenLabel" name="label" placeholder="例如：家里的电脑" maxlength="80" required>
+              <button class="secondary" type="submit">创建令牌</button>
+            </form>
+            <pre id="tokenOutput" class="token-output"></pre>
+            <ul id="tokens" class="token-list" aria-label="令牌列表"></ul>
+          </div>
+        </details>
+      </aside>
+
+      <div class="main-area">
+        <div id="emptyRepo" class="empty-workspace">
+          <div class="empty-file" aria-hidden="true"><span>cfg</span><i></i><i></i><i></i></div>
+          <h2>选择一个配置库</h2>
+          <p>在左侧创建或打开配置库，管理一个 CS2 配置文件的版本。</p>
+        </div>
+        <article id="repo" class="repository" hidden>
+          <div class="repository-heading">
+            <div><span class="context-label">CS2 配置库</span><h2 id="repoTitle"></h2><p id="repoHead"></p></div>
+            <div class="repository-actions">
+              <span class="file-type">.cfg</span>
+              <button id="renameRepo" class="secondary" type="button">重命名</button>
+              <button id="deleteRepo" class="danger-outline" type="button">删除</button>
+            </div>
+          </div>
+          <section class="workspace-section upload-section" aria-labelledby="uploadTitle">
+            <div class="section-heading"><div><h3 id="uploadTitle">上传新版本</h3><p>保留文件原始内容；保存时会检查当前版本。</p></div></div>
+            <form id="upload" class="upload-form">
+              <label class="file-field">配置文件<input type="file" name="file" accept=".cfg" required></label>
+              <label>文件编码<select name="encodingLabel"><option value="unknown">未知，仅下载</option><option value="utf-8">UTF-8</option><option value="utf-8-bom">UTF-8 BOM</option><option value="gb18030">GB18030</option></select></label>
+              <label class="message-field">版本备注<input name="message" maxlength="200" placeholder="这次修改了什么"></label>
+              <button class="primary" type="submit">上传版本</button>
+            </form>
+            <p class="field-hint">单个文件不超过 256 KiB。编码未知时，仍可下载原文件。</p>
+          </section>
+          <section class="workspace-section history-section" aria-labelledby="historyTitle">
+            <div class="section-heading"><div><h3 id="historyTitle">版本历史</h3><p>下载或选择历史版本进行比较与恢复。</p></div><span id="versionCount" class="count-label"></span></div>
+            <div id="versions" class="version-list"></div>
+          </section>
+          <div class="version-tools">
+            <section class="tool-section" aria-labelledby="diffTitle">
+              <h3 id="diffTitle">比较版本</h3><p>按行查看两个版本之间的变化。</p>
+              <form id="diffForm" class="tool-form">
+                <label>从<select name="from"></select></label>
+                <label>到<select name="to"></select></label>
+                <button class="secondary" type="submit">查看差异</button>
+              </form>
+              <pre id="diff" class="diff-output" aria-label="版本差异"></pre>
+            </section>
+            <section class="tool-section" aria-labelledby="restoreTitle">
+              <h3 id="restoreTitle">恢复历史版本</h3><p>恢复会创建一个新版本，原有历史不变。</p>
+              <form id="restoreForm" class="tool-form">
+                <label>选择版本<select name="sourceVersionId"></select></label>
+                <label>版本备注<input name="message" maxlength="200" placeholder="例如：恢复准星设置"></label>
+                <button class="secondary" type="submit">恢复为新版本</button>
+              </form>
+            </section>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+  <dialog id="renameDialog" class="repo-dialog" aria-labelledby="renameTitle">
+    <form id="renameForm">
+      <h2 id="renameTitle">重命名配置库</h2>
+      <label for="renameInput">新名称</label>
+      <input id="renameInput" name="name" maxlength="80" required>
+      <p id="renameError" class="dialog-error" role="alert"></p>
+      <div class="dialog-actions"><button class="secondary" type="button" data-close="renameDialog">取消</button><button class="primary" type="submit">保存名称</button></div>
+    </form>
+  </dialog>
+  <dialog id="deleteDialog" class="repo-dialog" aria-labelledby="deleteTitle" aria-describedby="deleteDescription">
+    <form id="deleteForm">
+      <h2 id="deleteTitle">删除配置库？</h2>
+      <p id="deleteDescription"></p>
+      <p class="delete-warning">该库及其所有版本将被永久删除，无法恢复；电脑上的本地文件不会被删除。</p>
+      <div class="dialog-actions"><button class="secondary" type="button" data-close="deleteDialog">取消</button><button class="danger" type="submit">确认删除</button></div>
+    </form>
+  </dialog>
+  <footer class="footer"><span>ConfigVault</span><span>单个 CS2 配置文件的版本管理</span></footer>
+  <script src="/app.js"></script>
+</body>
+</html>
